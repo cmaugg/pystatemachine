@@ -49,7 +49,7 @@ for _ in range(10):
 License
 =======
 
-`pystatemachine` is available under [MIT License](https://github.com/cmaugg/pystatemachine/raw/master/LICENSE).
+`pystatemachine` is available under [MIT License](https://github.com/cmaugg/pystatemachine/raw/master/LICENSE.txt).
 
 Download
 ========
