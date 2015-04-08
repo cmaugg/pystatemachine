@@ -12,7 +12,7 @@ setup(
     name='pystatemachine',
     version=version,
     description='Simple Finite-State Machines',
-    long_description=open('README.md').read(),
+    long_description=open('README.rst').read(),
     author='Christian Maugg',
     author_email='software@christianmaugg.de',
     url='https://github.com/cmaugg/pystatemachine',
