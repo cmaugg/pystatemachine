@@ -132,4 +132,23 @@ def acts_as_state_machine(cls):
 
 
 if __name__ == '__main__':
-    help()
+    @acts_as_state_machine
+    class Turnstile(object):
+        locked = State('locked', initial=True)
+        unlocked = State('unlocked')
+
+        @event(from_states=(locked, unlocked), to_state=unlocked)
+        def coin(self):
+            print('*blingbling* .. unlocked!')
+
+        @event(from_states=(locked, unlocked), to_state=locked)
+        def push(self):
+            print('*push* .. locked!')
+
+    import random
+
+    turnstile = Turnstile()
+    for _ in range(10):
+        handler = random.choice([turnstile.coin, turnstile.push])
+        handler()
+
