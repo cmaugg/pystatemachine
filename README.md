@@ -41,11 +41,15 @@ class Turnstile(object):
 import random
 
 turnstile = Turnstile()
-turnstile.push()
 for _ in range(10):
     handler = random.choice([turnstile.coin, turnstile.push])
     handler()
 ```
+
+License
+=======
+
+`pystatemachine` is available under [MIT License](https://github.com/cmaugg/pystatemachine/raw/master/LICENSE).
 
 Download
 ========
