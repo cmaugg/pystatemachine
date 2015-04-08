@@ -12,13 +12,14 @@ setup(
     name='pystatemachine',
     version=version,
     description='Simple Finite-State Machines',
+    long_description=open('README.md').read(),
     author='Christian Maugg',
     author_email='software@christianmaugg.de',
     url='https://github.com/cmaugg/pystatemachine',
     py_modules=['pystatemachine', ],
     download_url='https://github.com/cmaugg/pystatemachine/tarball/{0}'.format(version),
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
@@ -30,5 +31,5 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Topic :: Software Development :: Libraries',
     ],
-    keywords='state machine finite-state automaton',
+    keywords=['state machine', 'statemachine', 'finite-state', 'automaton'],
 )
