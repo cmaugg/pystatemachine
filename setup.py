@@ -31,5 +31,5 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Topic :: Software Development :: Libraries',
     ],
-    keywords=['state machine', 'statemachine', 'finite-state', 'automaton'],
+    keywords='state finite-state machine automaton',
 )
