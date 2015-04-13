@@ -26,12 +26,14 @@ SOFTWARE.
 
 
 
-changelog
+CHANGELOG
 =========
 
 1.1
 ===
-* added a decorator for registering a class instance's method as exception handler
+* added a decorator for registering a class' method as exception handler when an 'event'-decorated method
+fails. multiple methods may be registered as transition failure handler: they are invoked in the order
+given by the optional 'calling_sequence' keyword
 
 1.0
 ===
@@ -130,12 +132,11 @@ def event(from_states=None, to_state=None):
     return wrapper
 
 
-def transition_failure_handler(wrapped):
-    setattr(wrapped, '___pystatemachine_is_transition_failure_handler', wrapped)
-
-    @functools.wraps(wrapped)
-    def wrapper(instance, method, from_state, to_state, error):
-        return wrapped(instance, method, from_state, to_state, error)
+def transition_failure_handler(calling_sequence=0):
+    def wrapper(wrapped):
+        setattr(wrapped, '___pystatemachine_is_transition_failure_handler', True)
+        setattr(wrapped, '___pystatemachine_transition_failure_handler_calling_sequence', int(calling_sequence))
+        return wrapped
 
     return wrapper
 
@@ -161,10 +162,13 @@ def acts_as_state_machine(cls):
                 inspect.ismethod(obj),  # python2
                 inspect.isfunction(obj),  # python3
             ]),
-            callable(getattr(obj, '___pystatemachine_is_transition_failure_handler', None)),
+            getattr(obj, '___pystatemachine_is_transition_failure_handler', False),
         ])
 
-    transition_failure_handlers = [value for _, value in inspect.getmembers(cls, is_transition_failure_handler)]
+    transition_failure_handlers = sorted(
+        [value for name, value in inspect.getmembers(cls, is_transition_failure_handler)],
+        key=lambda m: getattr(m, '___pystatemachine_transition_failure_handler_calling_sequence', 0),
+    )
     setattr(cls, '___pystatemachine_transition_failure_handlers', transition_failure_handlers)
     cls.current_state = property(fget=StateInfo.get_current_state)
     cls.states = property(fget=get_states)
@@ -186,10 +190,13 @@ if __name__ == '__main__':
         def push(self):
             print('*push* .. locked!')
 
-        @transition_failure_handler
+        @transition_failure_handler(calling_sequence=2)
         def turnstile_malfunction(self, method, from_state, to_state, error):
             print('state transition from {0.name} to {1.name} failed. Reason: {2}'.format(from_state, to_state, error))
-            raise error
+
+        @transition_failure_handler(calling_sequence=1)
+        def before_turnstile_malfunction(self, method, from_state, to_state, error):
+            print('before state transition failure handler ..')
 
     import random
 
