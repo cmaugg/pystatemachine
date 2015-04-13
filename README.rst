@@ -14,7 +14,11 @@ triggering condition for each transition. ``pystatemachine`` offers an
 ``event`` decorator for a classes' bound methods, a ``State`` class to
 define the finite-state machine's states, and a
 ``acts_as_state_machine`` decorator for turning any python (new- or
-old-style) class into a finite-state machine.
+old-style) class into a finite-state machine. By default, any
+``event``-decorated method may raise errors. Optionally, a
+``transition_failure_handler`` decorator turns any class method into a
+failure handler which gets invoked when an ``event``-decorated method
+raises an error.
 
 Example
 =======
@@ -40,11 +44,21 @@ Following, a turnstile is modeled.
 
         @event(from_states=(locked, unlocked), to_state=unlocked)
         def coin(self):
+            assert random.random() > .5, 'failing for demonstration purposes, only ..'
             print('*blingbling* .. unlocked!')
 
         @event(from_states=(locked, unlocked), to_state=locked)
         def push(self):
             print('*push* .. locked!')
+
+        @transition_failure_handler(calling_sequence=2)
+        def turnstile_malfunction(self, method, from_state, to_state, error):
+            print('state transition from {0.name} to {1.name} failed. Reason: {2}'.format(from_state, to_state, error))
+
+        @transition_failure_handler(calling_sequence=1)
+        def before_turnstile_malfunction(self, method, from_state, to_state, error):
+            print('before state transition failure handler ..')
+
 
     import random
 
