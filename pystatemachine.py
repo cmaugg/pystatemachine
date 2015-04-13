@@ -23,13 +23,26 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+
+
+changelog
+=========
+
+1.1
+===
+* added a decorator for registering a class instance's method as exception handler
+
+1.0
+===
+* first public release
 """
 
 import functools
 import inspect
 
 __author__ = 'Christian Maugg <software@christianmaugg.de>'
-__version__ = version = '1.0'
+__version__ = version = '1.1'
 
 
 class InvalidStateTransition(Exception):
@@ -102,11 +115,27 @@ def event(from_states=None, to_state=None):
         def transition(instance, *a, **kw):
             if instance.current_state not in from_states_tuple:
                 raise InvalidStateTransition()
-            result = wrapped(instance, *a, **kw)
-            StateInfo.set_current_state(instance, to_state)
-            return result
+            try:
+                result = wrapped(instance, *a, **kw)
+            except Exception as error:
+                error_handlers = getattr(instance, '___pystatemachine_transition_failure_handlers', [])
+                for error_handler in error_handlers:
+                    error_handler(instance, wrapped, instance.current_state, to_state, error)
+            else:
+                StateInfo.set_current_state(instance, to_state)
+                return result
 
         return transition
+
+    return wrapper
+
+
+def transition_failure_handler(wrapped):
+    setattr(wrapped, '___pystatemachine_is_transition_failure_handler', wrapped)
+
+    @functools.wraps(wrapped)
+    def wrapper(instance, method, from_state, to_state, error):
+        return wrapped(instance, method, from_state, to_state, error)
 
     return wrapper
 
@@ -126,6 +155,17 @@ def acts_as_state_machine(cls):
     def get_states(obj):
         return StateInfo.get_states(obj.__class__)
 
+    def is_transition_failure_handler(obj):
+        return all([
+            any([
+                inspect.ismethod(obj),  # python2
+                inspect.isfunction(obj),  # python3
+            ]),
+            callable(getattr(obj, '___pystatemachine_is_transition_failure_handler', None)),
+        ])
+
+    transition_failure_handlers = [value for _, value in inspect.getmembers(cls, is_transition_failure_handler)]
+    setattr(cls, '___pystatemachine_transition_failure_handlers', transition_failure_handlers)
     cls.current_state = property(fget=StateInfo.get_current_state)
     cls.states = property(fget=get_states)
     return cls
@@ -139,11 +179,17 @@ if __name__ == '__main__':
 
         @event(from_states=(locked, unlocked), to_state=unlocked)
         def coin(self):
+            assert random.random() > .5, 'failing for demonstration purposes, only ..'
             print('*blingbling* .. unlocked!')
 
         @event(from_states=(locked, unlocked), to_state=locked)
         def push(self):
             print('*push* .. locked!')
+
+        @transition_failure_handler
+        def turnstile_malfunction(self, method, from_state, to_state, error):
+            print('state transition from {0.name} to {1.name} failed. Reason: {2}'.format(from_state, to_state, error))
+            raise error
 
     import random
 
