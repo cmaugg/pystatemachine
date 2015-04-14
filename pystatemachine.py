@@ -29,6 +29,11 @@ SOFTWARE.
 CHANGELOG
 =========
 
+1.2
+===
+* exceptions in an event-decorated function are now reraised when no transition failure handler was
+registered
+
 1.1
 ===
 * added a decorator for registering a class' method as exception handler when an 'event'-decorated method
@@ -44,7 +49,7 @@ import functools
 import inspect
 
 __author__ = 'Christian Maugg <software@christianmaugg.de>'
-__version__ = version = '1.1'
+__version__ = version = '1.2'
 
 
 class InvalidStateTransition(Exception):
@@ -123,6 +128,8 @@ def event(from_states=None, to_state=None):
                 error_handlers = getattr(instance, '___pystatemachine_transition_failure_handlers', [])
                 for error_handler in error_handlers:
                     error_handler(instance, wrapped, instance.current_state, to_state, error)
+                if not error_handlers:
+                    raise error
             else:
                 StateInfo.set_current_state(instance, to_state)
                 return result
