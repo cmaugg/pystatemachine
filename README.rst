@@ -67,6 +67,28 @@ Following, a turnstile is modeled.
         handler = random.choice([turnstile.coin, turnstile.push])
         handler()
 
+Changelog
+=========
+
+1.2
+---
+
+-  exceptions in an event-decorated function are now reraised when no
+   transition failure handler was registered
+
+1.1
+---
+
+-  added a decorator for registering a class' method as exception
+   handler when an 'event'-decorated method fails. multiple methods may
+   be registered as transition failure handler: they are invoked in the
+   order given by the optional 'calling\_sequence' keyword
+
+1.0
+---
+
+-  first public release
+
 License
 =======
 
