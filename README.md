@@ -4,8 +4,8 @@
 to turn any python object into a finite-state automaton which changes from one `State` to another when initiated by a
 triggering `event`.
 
-Usage
-=====
+
+# Usage
 
 A finite-state machine is defined by a list of its states, and the triggering condition for each transition.
 `pystatemachine` offers an `event` decorator for a classes' bound methods, a `State` class to define the
@@ -14,8 +14,8 @@ class into a finite-state machine. By default, any `event`-decorated method may 
 `transition_failure_handler` decorator turns any class method into a failure handler which gets invoked when
 an `event`-decorated method raises an error.
 
-Example
-=======
+
+# Example
 
 Following, a turnstile is modeled.
 
@@ -58,13 +58,28 @@ for _ in range(10):
     handler()
 ```
 
-License
-=======
+
+# Changelog
+
+## 1.2
+* exceptions in an event-decorated function are now reraised when no transition failure handler was
+registered
+
+## 1.1
+* added a decorator for registering a class' method as exception handler when an 'event'-decorated method
+fails. multiple methods may be registered as transition failure handler: they are invoked in the order
+given by the optional 'calling_sequence' keyword
+
+## 1.0
+* first public release
+
+
+# License
 
 `pystatemachine` is available under [MIT License](https://github.com/cmaugg/pystatemachine/raw/master/LICENSE.txt).
 
-Download
-========
+
+# Download
 
 You can download [pystatemachine.py](https://github.com/cmaugg/pystatemachine/raw/master/pystatemachine.py).
 
